@@ -82,7 +82,7 @@ public class EnrollmentDAO {
 	 */
 	public void updateEnrollmentRecord(int id, int studentID, int courseID, int year) {
 		String sql = String.format(
-			    "UPDATE Enrollment SET studentID = %d, courseID = %d, year = %d WHERE enrollmentID = %d;",
+			    "UPDATE Enrollments SET studentID = %d, courseID = %d, year = %d WHERE enrollmentID = %d;",
 			    studentID, courseID, year, id);  // Correct order
 
 		
