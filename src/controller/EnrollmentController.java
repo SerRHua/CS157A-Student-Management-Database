@@ -45,6 +45,16 @@ public class EnrollmentController {
      */
     public void show() {
     	
+        // update tables for all users if multiple users access at same time
+        // updates every 5 seconds
+        Timeline timeline = new Timeline(
+        	    new KeyFrame(Duration.seconds(5), e -> {
+        	        enrollments.setAll(EnrollmentDAO.fetchAllEnrollments());
+        	    })
+        	);
+        	timeline.setCycleCount(Animation.INDEFINITE);
+        	timeline.play();
+    	
     	//make table for enrollment
     	
         TableView<Enrollment> table = new TableView<>(enrollments);
@@ -195,6 +205,9 @@ public class EnrollmentController {
 
                 // Refresh the list to show all enrollments
                 enrollments.setAll(EnrollmentDAO.fetchAllEnrollments());
+                
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
 
                 idCol.setVisible(true);
                 courseCol.setVisible(true);
@@ -225,6 +238,8 @@ public class EnrollmentController {
                 
                 // Refresh the list to show all enrollments
                 enrollments.setAll(EnrollmentDAO.fetchAllEnrollments());
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
 
                 idCol.setVisible(true);
                 courseCol.setVisible(true);
@@ -277,6 +292,8 @@ public class EnrollmentController {
                 enrollments.setAll(enrollments);
                 // Refresh the list to show all enrollments
                 enrollments.setAll(EnrollmentDAO.fetchAllEnrollments());
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
 
                 idCol.setVisible(true);
                 courseCol.setVisible(true);
@@ -297,6 +314,11 @@ public class EnrollmentController {
             if (colCourse.isSelected()) selectedCols.add("courseID");
             if (colStudent.isSelected()) selectedCols.add("studentID");
             if (colEnrollmentYear.isSelected()) selectedCols.add("year");
+            
+            if (selectedCols.isEmpty()) {
+                showAlert("Please select at least one column to display.");
+                return;
+            }
             
             String colsString = selectedCols.isEmpty() ? "*" : String.join(", ", selectedCols);
             if (!selectedCols.contains("enrollmentID")) {
@@ -349,6 +371,8 @@ public class EnrollmentController {
             courseCol.setVisible(colCourse.isSelected());
             studentCol.setVisible(colStudent.isSelected());
             enrollYear.setVisible(colEnrollmentYear.isSelected());
+          //pause the table auto updates so it doesn't show whole table while user is searching/filtering
+            timeline.pause();
         });
         
         Button back = new Button("Back");
@@ -357,15 +381,6 @@ public class EnrollmentController {
         layout.getChildren().addAll(formSection, table, back);
         stage.setScene(new Scene(layout, 1000, 400));
         
-        // update tables for all users if multiple users access at same time
-        // updates every 5 seconds
-        Timeline timeline = new Timeline(
-        	    new KeyFrame(Duration.seconds(5), e -> {
-        	        enrollments.setAll(EnrollmentDAO.fetchAllEnrollments());
-        	    })
-        	);
-        	timeline.setCycleCount(Animation.INDEFINITE);
-        	timeline.play();
     }
 
     /**

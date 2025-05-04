@@ -46,6 +46,16 @@ public class GradesController {
      * show the window for grades GUI 
      */
     public void show() {
+        // update tables for all users if multiple users access at same time
+        // updates every 5 seconds
+        Timeline timeline = new Timeline(
+        	    new KeyFrame(Duration.seconds(5), e -> {
+        	        grades.setAll(GradesDAO.fetchAllGrades());
+        	    })
+        	);
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play(); //make sure table updates every 5 seconds
+        	
     	// make table for Grades
         TableView<Grade> table = new TableView<>(grades);
         table.setPrefHeight(150);
@@ -82,7 +92,7 @@ public class GradesController {
 
         Button addBtn = new Button("Add Grade");
         
-        VBox addBox = new VBox(10, new Label("Add Grade"), studentID, courseID, grade, semester, addBtn);
+        VBox addBox = new VBox(10, new Label("Add Grade"), courseID, studentID, grade, semester, addBtn);
         
         // --- DELETE GRADE ---
         TextField gradeID = new TextField();
@@ -107,7 +117,7 @@ public class GradesController {
         Button updateBtn = new Button("Update Grade");
         
         
-        VBox updateBox = new VBox(10, new Label("Update Grade"), requiredGradeID, updatedStudentID, updatedCourseID, changeGrade, changeSemester, updateBtn);
+        VBox updateBox = new VBox(10, new Label("Update Grade"), requiredGradeID, updatedCourseID, updatedStudentID, changeGrade, changeSemester, updateBtn);
         
         // --- SEARCH/FILTER STUDENTS/GRADES ---
         
@@ -119,7 +129,7 @@ public class GradesController {
         CheckBox colGrade = new CheckBox("Grade");
         CheckBox colSemester = new CheckBox("Semester");
 
-        VBox columnSelectionBox = new VBox(5, columnLabel, colGradeID, colStudentID, colCourseID, colGrade, colSemester);
+        VBox columnSelectionBox = new VBox(5, columnLabel, colGradeID, colCourseID, colStudentID, colGrade, colSemester);
         
         // separate cols and rows for filtering - looks better
         Separator separator = new Separator();
@@ -177,7 +187,7 @@ public class GradesController {
 
         
         
-        VBox rowSelectionBox = new VBox(5, rowLabel, gradeIDRow, studentIDRow, courseIDRow, gradeRow, semesterRow);
+        VBox rowSelectionBox = new VBox(5, rowLabel, gradeIDRow, courseIDRow, studentIDRow, gradeRow, semesterRow);
         
         HBox selectionsBox = new HBox(5, columnSelectionBox, separator, rowSelectionBox);
 
@@ -228,6 +238,8 @@ public class GradesController {
                 // Create grade record
                 gradesDAO.createGradeRecord(sID, cID, g, sem);
                 grades.setAll(GradesDAO.fetchAllGrades());
+                
+                timeline.play();
 
                 gradeIDCol.setVisible(true);
                 studentIDCol.setVisible(true);
@@ -260,9 +272,23 @@ public class GradesController {
             courseIDCol.setVisible(true);
             semesterYearCol.setVisible(true);
             gradeCol.setVisible(true);
+            timeline.play();
         });
         
         updateBtn.setOnAction(e -> {
+            String gradeIDText = requiredGradeID.getText().trim();
+
+            // Check if the gradeID is empty or contains letters
+            if (gradeIDText.isEmpty()) {
+                showAlert("Grade ID cannot be empty.");
+                return;
+            }
+
+            // Check if the gradeID contains any non-numeric characters
+            if (!gradeIDText.matches("\\d+")) {
+                showAlert("Grade ID must be a number.");
+                return;
+            }
         	int id = Integer.parseInt(requiredGradeID.getText());
 
             Grade existingGrade = grades.stream()
@@ -306,7 +332,9 @@ public class GradesController {
             courseIDCol.setVisible(true);
             semesterYearCol.setVisible(true);
             gradeCol.setVisible(true);
+            timeline.play();
         });
+        
         
         searchBtn.setOnAction(e -> {
         	// List of selected columns
@@ -316,6 +344,11 @@ public class GradesController {
             if (colCourseID.isSelected()) selectedCols.add("courseID");
             if (colGrade.isSelected()) selectedCols.add("grade");
             if (colSemester.isSelected()) selectedCols.add("semester");
+            
+            if (selectedCols.isEmpty()) {
+                showAlert("Please select at least one column to display.");
+                return;
+            }
             
             
             String colsString = selectedCols.isEmpty() ? "*" : String.join(", ", selectedCols);
@@ -374,6 +407,7 @@ public class GradesController {
             courseIDCol.setVisible(colCourseID.isSelected());
             gradeCol.setVisible(colGrade.isSelected());
             semesterYearCol.setVisible(colSemester.isSelected());
+            timeline.pause();
         });
         
         // --- Place Add, Delete, Update, Search Side by Side ---
@@ -385,15 +419,6 @@ public class GradesController {
         layout.getChildren().addAll(formSection, table, back);
         stage.setScene(new Scene(layout, 1000, 400));
         
-        // update tables for all users if multiple users access at same time
-        // updates every 5 seconds
-        Timeline timeline = new Timeline(
-        	    new KeyFrame(Duration.seconds(5), e -> {
-        	        grades.setAll(GradesDAO.fetchAllGrades());
-        	    })
-        	);
-        	timeline.setCycleCount(Animation.INDEFINITE);
-        	timeline.play();
     }
     
     /**

@@ -70,20 +70,22 @@ public class GradesDAO {
 	 * @param semester		the semester (spring, fall, summer, winter) the course takes place in
 	 */
 	public void updateGradeRecord(int id, int studentID, int courseID, double grade, String semester) {
-		String sql = String.format("UPDATE Grades "
-				+ " SET studentID = %d, courseID = %d, grade = %d, semester = '%s'"
-				+ " WHERE gradeID = %d;", id, studentID, courseID, grade, semester);
-		
-		try {
-			Statement stmt = conn.createStatement();
-			stmt.executeUpdate(sql);
-			System.out.println("Grade record updated.");
-			stmt.close();
-		}
-		catch (SQLException e) {
-			e.printStackTrace();
-		}
+	    // Correct the format specifiers
+	    String sql = String.format("UPDATE Grades "
+	            + "SET studentID = %d, courseID = %d, grade = %f, semester = '%s' "
+	            + "WHERE gradeID = %d;", studentID, courseID, grade, semester, id);
+
+	    try {
+	        Statement stmt = conn.createStatement();
+	        stmt.executeUpdate(sql);
+	        System.out.println("Grade record updated.");
+	        stmt.close();
+	    }
+	    catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
+
 	
 	/**
 	 * Returns a list of grade records meeting a given criteria

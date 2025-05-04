@@ -44,6 +44,16 @@ public class StudentController {
      * show the window for student GUI 
      */
     public void show() {
+    	
+        // update tables for all users if multiple users access at same time
+        // updates every 5 seconds
+        Timeline timeline = new Timeline(
+        	    new KeyFrame(Duration.seconds(5), e -> {
+        	        students.setAll(StudentDAO.fetchAllStudents());
+        	    })
+        	);
+        	timeline.setCycleCount(Animation.INDEFINITE);
+        	timeline.play();
         VBox layout = new VBox(15);
         layout.setStyle("-fx-padding: 20px");
         
@@ -174,11 +184,14 @@ public class StudentController {
 
                 studentDAO.createStudentRecord(first, last, dob.toString());
                 students.setAll(StudentDAO.fetchAllStudents());
+                //make sure table refreshes for all users looking at tables
+                timeline.play();
 
                 studentIDCol.setVisible(true);
                 studentFirstCol.setVisible(true);
                 studentLastCol.setVisible(true);
                 studentBirthCol.setVisible(true);
+              
 
             } catch (Exception ex) {
                 showAlert("Error while adding student: " + ex.getMessage());
@@ -211,6 +224,8 @@ public class StudentController {
                 studentFirstCol.setVisible(true);
                 studentLastCol.setVisible(true);
                 studentBirthCol.setVisible(true);
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
             } catch (NumberFormatException ex) {
             	Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Course ID Not Found");
@@ -247,6 +262,8 @@ public class StudentController {
                 studentFirstCol.setVisible(true);
                 studentLastCol.setVisible(true);
                 studentBirthCol.setVisible(true);
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
 
             } catch (NumberFormatException ex) {
                 //showAlert("Invalid ID format.");
@@ -259,6 +276,11 @@ public class StudentController {
             if (colFirstName.isSelected()) selectedCols.add("first_name");  // fixed column name
             if (colLastName.isSelected()) selectedCols.add("last_name");
             if (colBirthDate.isSelected()) selectedCols.add("birthdate");
+            
+            if (selectedCols.isEmpty()) {
+                showAlert("Please select at least one column to display.");
+                return;
+            }
             
             String colsString = selectedCols.isEmpty() ? "*" : String.join(", ", selectedCols);
             if (!selectedCols.contains("studentID")) {
@@ -302,6 +324,9 @@ public class StudentController {
             studentFirstCol.setVisible(colFirstName.isSelected());
             studentLastCol.setVisible(colLastName.isSelected());
             studentBirthCol.setVisible(colBirthDate.isSelected());
+            
+          //make sure table refreshes for all users looking at tables
+            timeline.play();
 
         });
 
@@ -312,16 +337,6 @@ public class StudentController {
 
         layout.getChildren().addAll(formSection, table, back);
         stage.setScene(new Scene(layout, 1000, 400));
-        
-        // update tables for all users if multiple users access at same time
-        // updates every 5 seconds
-        Timeline timeline = new Timeline(
-        	    new KeyFrame(Duration.seconds(5), e -> {
-        	        students.setAll(StudentDAO.fetchAllStudents());
-        	    })
-        	);
-        	timeline.setCycleCount(Animation.INDEFINITE);
-        	timeline.play();
     }
     
     /**

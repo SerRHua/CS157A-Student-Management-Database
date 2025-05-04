@@ -42,6 +42,15 @@ public class CourseController {
      * show the window for course 
      */
     public void show() {
+        // update tables for all users if multiple users access at same time
+        // updates every 5 seconds
+        Timeline timeline = new Timeline(
+        	    new KeyFrame(Duration.seconds(5), e -> {
+        	        courses.setAll(CourseDAO.fetchAllCourses());
+        	    })
+        	);
+        	timeline.setCycleCount(Animation.INDEFINITE);
+        	timeline.play();
         VBox layout = new VBox(15);
         layout.setStyle("-fx-padding: 20px");
         
@@ -166,7 +175,6 @@ public class CourseController {
                 return;
             }
 
-            Course course = new Course(-1, courseName, teacherName, semesterText);
             courseDAO.createCourseRecord(courseName, teacherName, semesterText);
             courses.setAll(CourseDAO.fetchAllCourses());
 
@@ -174,6 +182,8 @@ public class CourseController {
             courseNameCol.setVisible(true);
             teacherNameCol.setVisible(true);
             semesterYear.setVisible(true);
+            //make sure table refreshes for all users looking at tables
+            timeline.play();
         });
 
         
@@ -203,6 +213,8 @@ public class CourseController {
                 courseNameCol.setVisible(true);
                 teacherNameCol.setVisible(true);
                 semesterYear.setVisible(true);
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
             } catch (NumberFormatException ex) {
             	Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Course ID Not Found");
@@ -234,7 +246,6 @@ public class CourseController {
                 String teacherName = updateLast.getText().isEmpty()   ? existing.getInstructor(): updateLast.getText();
                 String semesterVal = updateSemester.getText().isEmpty() ? existing.getSemester()   : updateSemester.getText();
 
-                Course c = new Course(id, courseName, teacherName, semesterVal);
                 courseDAO.updateCourseRecord(id, courseName, teacherName, semesterVal);
                 
                 // make sure all columns visible in case filter button was used
@@ -242,6 +253,8 @@ public class CourseController {
                 courseNameCol.setVisible(true);
                 teacherNameCol.setVisible(true);
                 semesterYear.setVisible(true);
+              //make sure table refreshes for all users looking at tables
+                timeline.play();
 
             } catch (NumberFormatException ex) {
                 //showAlert("Invalid ID format.");
@@ -262,6 +275,11 @@ public class CourseController {
             String colsString = selectedCols.isEmpty() ? "*" : String.join(", ", selectedCols);
             if (!selectedCols.contains("courseID")) {
                 colsString = "courseID, " + colsString;  // ensure it's always included for object mapping
+            }
+            
+            if (selectedCols.isEmpty()) {
+                showAlert("Please select at least one column to display.");
+                return;
             }
             
             // Convert selected columns to string for search
@@ -306,6 +324,8 @@ public class CourseController {
             courseNameCol.setVisible(colCourseName.isSelected());
             teacherNameCol.setVisible(colTeacherName.isSelected());
             semesterYear.setVisible(colSemesterYear.isSelected());
+            //pause the table auto updates so it doesn't show whole table while user is searching/filtering
+            timeline.pause();
         });
 
         Button back = new Button("Back");
@@ -314,15 +334,6 @@ public class CourseController {
         layout.getChildren().addAll(formSection, table, back);
         stage.setScene(new Scene(layout, 1000, 400));
         
-        // update tables for all users if multiple users access at same time
-        // updates every 5 seconds
-        Timeline timeline = new Timeline(
-        	    new KeyFrame(Duration.seconds(5), e -> {
-        	        courses.setAll(CourseDAO.fetchAllCourses());
-        	    })
-        	);
-        	timeline.setCycleCount(Animation.INDEFINITE);
-        	timeline.play();
     }
     
     /**
