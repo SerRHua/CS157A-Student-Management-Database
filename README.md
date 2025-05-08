@@ -6,30 +6,30 @@ The purpose of this project is to improve administrative efficiency and reduce t
 ## Instructions for setting up project
 Download the MySQL Installer:
 
-###Go to the MySQL
+### Go to the MySQL
 Downloads page and download the MySQL Installer for Windows (choose the "MySQL Installer - Community" version).
 
-###Run the Installer
+### Run the Installer
 
 Choose the Developer Default setup to install MySQL Server, Workbench, Shell, and other tools.
 
 Click Next and proceed through the dependency check (the installer will fetch missing components if needed).
 
-###Configure MySQL Server
+### Configure MySQL Server
 Choose the default server configuration.
 Set a root password (remember this—you’ll need it to log in).
 Optionally, add additional MySQL user accounts. Set MySQL to run as a Windows service.
 
-###Complete Installation
+### Complete Installation
 Click Execute to install and configure all selected components.
 Step 2: Download MySQL JDBC Driver
 Download the MySQL Connector/J from: https://www.mysql.com/products/connector/ Extract the .zip and locate the mysql-connector-java-<version>.jar file.
 
-###If using terminal and have home-brew installed
+### If using terminal and have home-brew installed
 Use the command “brew install mysql”
 Then, use “mysql -u root -p” and press enter, because there is no password yet. For MySQL version < 8.0, use the command “UPDATE mysql.user SET Password = PASSWORD(‘password’) WHERE User = 'root'; FLUSH PRIVILEGES;” to set the password. If the version is >= 8.0, use the command “"FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY ‘password’; FLUSH PRIVILEGES;”.
 
-###For IntelliJ IDEA
+### For IntelliJ IDEA
 File → Project Structure → Libraries
 Click + → Java → Add the mysql-connector-java-xx.jar
 Apply and OK
